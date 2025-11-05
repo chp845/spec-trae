@@ -115,7 +115,7 @@ specify-cn check
 要升级 specify-cn, 运行: 
 
 ```bash
-uv tool install specify-cn-cli --force --from git+https://github.com/linfee/spec-kit-cn.git
+uv tool install specify-cn-cli --force --from git+https://github.com/chp845/spec-trae.git
 ```
 
 #### 方式 2: 一次性使用
@@ -123,7 +123,7 @@ uv tool install specify-cn-cli --force --from git+https://github.com/linfee/spec
 直接运行, 无需安装: 
 
 ```bash
-uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <PROJECT_NAME>
+uvx --from git+https://github.com/chp845/spec-trae.git specify-cn init <PROJECT_NAME>
 ```
 
 **持久化安装的优势**:
