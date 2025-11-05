@@ -306,6 +306,12 @@ build_variant() {
 
       generate_commands codebuddy md "\$ARGUMENTS" "$base_dir/.codebuddy/commands" "$script" ;;
 
+    trae)
+
+      mkdir -p "$base_dir/.trae/workflows"
+
+      generate_commands trae md "\$ARGUMENTS" "$base_dir/.trae/workflows" "$script" ;;
+
   esac
 
   ( cd "$base_dir" && zip -r "../spec-kit-template-${agent}-${script}-${PACKAGE_VERSION}.zip" . )
@@ -316,7 +322,7 @@ build_variant() {
 
 # Determine agent list
 
-ALL_AGENTS=(claude gemini copilot cursor-agent qwen opencode windsurf codex kilocode auggie roo q codebuddy)
+ALL_AGENTS=(claude gemini copilot cursor-agent qwen opencode windsurf codex kilocode auggie roo q codebuddy trae)
 
 ALL_SCRIPTS=(sh ps)
 

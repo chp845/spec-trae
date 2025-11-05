@@ -98,6 +98,9 @@ jobs:
         - spec-kit-template-roo-ps-${{ steps.get_tag.outputs.package_version }}.zip
         - spec-kit-template-codebuddy-sh-${{ steps.get_tag.outputs.package_version }}.zip
         - spec-kit-template-codebuddy-ps-${{ steps.get_tag.outputs.package_version }}.zip
+        - spec-kit-template-trae-sh-${{ steps.get_tag.outputs.package_version }}.zip
+        - spec-kit-template-trae-ps-${{ steps.get_tag.outputs.package_version }}.zip
+
         EOF
         
         echo "Generated release notes:"
@@ -136,6 +139,8 @@ jobs:
           spec-kit-template-roo-ps-${{ steps.get_tag.outputs.package_version }}.zip \
           spec-kit-template-codebuddy-sh-${{ steps.get_tag.outputs.package_version }}.zip \
           spec-kit-template-codebuddy-ps-${{ steps.get_tag.outputs.package_version }}.zip \
+          spec-kit-template-trae-sh-${{ steps.get_tag.outputs.package_version }}.zip \
+          spec-kit-template-trae-ps-${{ steps.get_tag.outputs.package_version }}.zip \
           --title "Spec Kit CN 中文模板 - $VERSION_NO_V" \
           --notes-file release_notes.md
       env:
