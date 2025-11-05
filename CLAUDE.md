@@ -143,6 +143,9 @@ specify-cn --help | grep -E "中文|Spec Kit CN"  # 验证中文输出
 | Kilocode       | `kilocode`     | `.kilocode/`           | Markdown | CLI    |
 | Auggie         | `auggie`       | `.auggie/`             | Markdown | CLI    |
 | Amazon Q Developer CLI | `q` | `.amazonq/prompts/` | Markdown | CLI    |
+| Trae AI        | `trae`         | `.trae/rules/` | Markdown | CLI    |
+
+
 
 ---
 

@@ -150,6 +150,12 @@ AGENT_CONFIG = {
         "install_url": "https://ampcode.com/manual#install",
         "requires_cli": True,
     },
+    "trae": {
+        "name": "Trae AI",
+        "folder": ".trae/",
+        "install_url": "https://trae.ai",
+        "requires_cli": False,
+    },
 }
 
 SCRIPT_TYPE_CHOICES = {"sh": "POSIX Shell (bash/zsh)", "ps": "PowerShell"}
@@ -559,7 +565,7 @@ def merge_json_files(existing_path: Path, new_content: dict, verbose: bool = Fal
     return merged
 
 def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Tuple[Path, dict]:
-    repo_owner = "linfee"
+    repo_owner = "chp845"
     repo_name = "spec-kit-cn"
     if client is None:
         client = httpx.Client(verify=ssl_context)
@@ -627,6 +633,7 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
             headers=_github_auth_headers(github_token),
         ) as response:
             if response.status_code != 200:
+                response.read()
                 body_sample = response.text[:400]
                 raise RuntimeError(f"Download failed with {response.status_code}\nHeaders: {response.headers}\nBody (truncated): {body_sample}")
             total_size = int(response.headers.get('content-length', 0))
@@ -865,7 +872,7 @@ def ensure_executable_scripts(project_path: Path, tracker: StepTracker | None = 
 @app.command()
 def init(
     project_name: str = typer.Argument(None, help="Name for your new project directory (optional if using --here, or use '.' for current directory)"),
-    ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, or q"),
+    ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, amp, q, trae"),
     script_type: str = typer.Option(None, "--script", help="Script type to use: sh or ps"),
     ignore_agent_tools: bool = typer.Option(False, "--ignore-agent-tools", help="Skip checks for AI agent tools like Claude Code"),
     no_git: bool = typer.Option(False, "--no-git", help="Skip git repository initialization"),
@@ -896,6 +903,10 @@ def init(
         specify init --here --ai claude    # Alternative syntax for current directory
         specify init --here --ai codex
         specify init --here --ai codebuddy
+        specify init --here --ai amp
+        specify init --here --ai q
+        specify init --here --ai trae
+
         specify init --here
         specify init --here --force  # Skip confirmation when current directory not empty
     """

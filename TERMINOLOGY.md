@@ -35,6 +35,9 @@
 | CodeBuddy | CodeBuddy | 不翻译, AI助手名称 |
 | Amazon Q Developer CLI | Amazon Q Developer CLI | 不翻译, AI助手名称 |
 | Amp | Amp | 不翻译, AI助手名称 |
+| Trae AI | Trae AI | 不翻译, AI助手名称 |
+
+
 
 ---
 
@@ -255,7 +258,7 @@
 ### 1. 不翻译的英文术语
 以下术语在任何情况下都不翻译: 
 - **CLI, API, JSON, TOML, YAML, Git, GitHub**
-- **AI助手名称**: Claude Code, Gemini CLI, GitHub Copilot, Cursor, 等
+- **AI助手名称**: Claude Code, Gemini CLI, GitHub Copilot, Cursor Agent, Qwen Code, OpenCode, Amazon Q Developer CLI, CodeBuddy, Amp, Trae AI, 等
 - **技术标准**: HTTP, HTTPS, SSL, TLS, URL
 - **编程语言**: Python, JavaScript, TypeScript, Java, Go, 等
 - **框架名称**: React, Vue, Angular, Django, Flask, 等

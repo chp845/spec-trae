@@ -3,7 +3,7 @@
 ## 前置要求
 
 - **Linux/macOS**(或 Windows; 现在支持 PowerShell 脚本, 无需 WSL)
-- AI编码助手: [Claude Code](https://www.anthropic.com/claude-code), [GitHub Copilot](https://code.visualstudio.com/), [Codebuddy CLI](https://www.codebuddy.ai/cli)或 [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+- AI编码助手: [Claude Code](https://www.anthropic.com/claude-code), [GitHub Copilot](https://code.visualstudio.com/), [Codebuddy CLI](https://www.codebuddy.ai/cli)、 [Gemini CLI](https://github.com/google-gemini/gemini-cli) 或 [Trae AI](https://trae.ai/)
 - [uv](https://docs.astral.sh/uv/) 用于包管理
 - [Python 3.11+](https://www.python.org/downloads/)
 - [Git](https://git-scm.com/downloads)
@@ -35,6 +35,8 @@ uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <projec
 uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <project_name> --ai gemini
 uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <project_name> --ai copilot
 uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <project_name> --ai codebuddy
+uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <project_name> --ai qwen
+uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <project_name> --ai trae
 ```
 
 ### 指定脚本类型(Shell vs PowerShell)

@@ -45,6 +45,8 @@ Specify supports multiple AI agents by generating agent-specific command files a
 | **CodeBuddy CLI** | `.codebuddy/commands/` | Markdown | `codebuddy` | CodeBuddy CLI |
 | **Amazon Q Developer CLI** | `.amazonq/prompts/` | Markdown | `q` | Amazon Q Developer CLI |
 | **Amp** | `.agents/commands/` | Markdown | `amp` | Amp CLI |
+| **Trae AI** | `.trae/workflows/` | Markdown | `trae` | Trae AI IDE-based Agent |
+
 
 ### Step-by-Step Integration Guide
 
@@ -87,7 +89,7 @@ This eliminates the need for special-case mappings throughout the codebase.
 Update the `--ai` parameter help text in the `init()` command to include the new agent:
 
 ```python
-ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, new-agent-cli, or q"),
+ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, new-agent-cli, q, or trae"),
 ```
 
 Also update any function docstrings, examples, and error messages that list available agents.
@@ -108,7 +110,7 @@ Modify `.github/workflows/scripts/create-release-packages.sh`:
 ##### Add to ALL_AGENTS array
 
 ```bash
-ALL_AGENTS=(claude gemini copilot cursor-agent qwen opencode windsurf q)
+ALL_AGENTS=(claude gemini copilot cursor-agent qwen opencode windsurf q codebuddy trae)
 ```
 
 ##### Add case statement for directory structure
@@ -119,6 +121,11 @@ case $agent in
   windsurf)
     mkdir -p "$base_dir/.windsurf/workflows"
     generate_commands windsurf md "\$ARGUMENTS" "$base_dir/.windsurf/workflows" "$script" ;;
+  
+  trae)
+    mkdir -p "$base_dir/.trae/workflows"
+    generate_commands trae md "\$ARGUMENTS" "$base_dir/.trae/workflows" "$script" ;;
+  
 esac
 ```
 
@@ -131,6 +138,9 @@ gh release create "$VERSION" \
   # ... existing packages ...
   .genreleases/spec-kit-template-windsurf-sh-"$VERSION".zip \
   .genreleases/spec-kit-template-windsurf-ps-"$VERSION".zip \
+  .genreleases/spec-kit-template-trae-sh-"$VERSION".zip \
+  .genreleases/spec-kit-template-trae-ps-"$VERSION".zip \
+
   # Add new agent packages here
 ```
 
@@ -311,6 +321,9 @@ Require a command-line tool to be installed:
 - **Amazon Q Developer CLI**: `q` CLI
 - **CodeBuddy CLI**: `codebuddy` CLI
 - **Amp**: `amp` CLI
+- **Trae AI**: `trae` CLI
+
+
 
 ### IDE-Based Agents
 
@@ -323,7 +336,7 @@ Work within integrated development environments:
 
 ### Markdown Format
 
-Used by: Claude, Cursor, opencode, Windsurf, Amazon Q Developer, Amp
+Used by: Claude, Cursor, opencode, Windsurf, Amazon Q Developer, Amp, Trae AI
 
 ```markdown
 ---
@@ -352,6 +365,9 @@ Command content with {SCRIPT} and {{args}} placeholders.
   - Copilot: `.github/prompts/`
   - Cursor: `.cursor/commands/`
   - Windsurf: `.windsurf/workflows/`
+  - Trae AI: `.trae/workflows/`
+
+
 
 ## Argument Patterns
 

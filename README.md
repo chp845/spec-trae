@@ -16,6 +16,7 @@
 </p>
 
 > **💡 这是 [GitHub Spec Kit](https://github.com/github/spec-kit) 的官方中文复刻版本**
+> **💡 这是 [GitHub Spec Kit](https://github.com/Linfee/spec-kit-cn) 的复刻版本**
 > 
 > **🔄 对应原版版本**: [v0.0.78](https://github.com/github/spec-kit/releases/tag/v0.0.78)
 > 
@@ -200,6 +201,9 @@ uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <PROJEC
 | [Codex CLI](https://github.com/openai/codex)              | ✅    | OpenAI Codex CLI助手                                                                |
 | [Amazon Q Developer CLI](https://aws.amazon.com/developer/learning/q-developer-cli/) | ⚠️ | Amazon Q Developer CLI [不支持](https://github.com/aws/amazon-q-developer-cli/issues/3064) 斜杠命令的自定义参数.  |
 | [Amp](https://ampcode.com/)                               | ✅    | Amp AI助手                                                                          |
+| [Trae AI](https://trae.ai/)                               | ✅    | Trae AI IDE-based Agent                                                             |
+
+
 
 ## 🔧 Specify CN CLI 参考
 
@@ -210,14 +214,14 @@ uvx --from git+https://github.com/linfee/spec-kit-cn.git specify-cn init <PROJEC
 | 命令    | 描述                                                                                                                          |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `init`  | 从最新模板初始化新的 Specify CN 项目                                                                                          |
-| `check` | 检查已安装的工具 (`git`, `claude`, `gemini`, `code`/`code-insiders`, `cursor-agent`, `windsurf`, `qwen`, `opencode`, `codex`, `q`) |
+| `check` | 检查已安装的工具 (`git`, `claude`, `gemini`, `code`/`code-insiders`, `cursor-agent`, `windsurf`, `qwen`, `opencode`, `codex`, `q`, `trae`) |
 
 ### `specify-cn init` 参数和选项
 
 | 参数/选项              | 类型 | 描述                                                                                                                             |
 | ---------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `<project-name>`       | 参数 | 新项目目录的名称(使用 `--here` 时可选, 或使用 `.` 表示当前目录)                                                                                         |
-| `--ai`                 | 选项 | 要使用的 AI 助手: `claude`, `gemini`, `copilot`, `cursor-agent`, `qwen`, `opencode`, `codex`, `windsurf`, `kilocode`, `auggie`, `roo`, `codebuddy`, `amp`, 或 `q` |
+| `--ai`                 | 选项 | 要使用的 AI 助手: `claude`, `gemini`, `copilot`, `cursor-agent`, `qwen`, `opencode`, `codex`, `windsurf`, `kilocode`, `auggie`, `roo`, `codebuddy`, `amp`, `trae`, 或 `q` |
 | `--script`             | 选项 | 要使用的脚本变体: `sh` (bash/zsh) 或 `ps` (PowerShell)                                                                           |
 | `--ignore-agent-tools` | 标志 | 跳过 AI 代理工具的检查, 如 Claude Code                                                                                             |
 | `--no-git`             | 标志 | 跳过 git 仓库初始化                                                                                                              |
@@ -403,6 +407,11 @@ specify-cn init <project_name> --ai amp
 specify-cn init <project_name> --ai kilocode
 specify-cn init <project_name> --ai auggie
 specify-cn init <project_name> --ai roo
+specify-cn init <project_name> --ai codebuddy
+specify-cn init <project_name> --ai q
+specify-cn init <project_name> --ai trae
+
+
 # 或在当前目录: 
 specify-cn init --here --ai claude
 specify-cn init --here --ai codex
@@ -410,7 +419,7 @@ specify-cn init --here --ai codex
 specify-cn init --here --force --ai claude
 ```
 
-CLI会检查你是否安装了Claude Code、Gemini CLI、Cursor CLI、Qwen CLI、opencode或Codex CLI. 如果你没有安装, 或者你希望在不检查正确工具的情况下获取模板, 请在命令中使用 `--ignore-agent-tools`: 
+CLI会检查你是否安装了Claude Code、Gemini CLI、Cursor CLI、Qwen CLI、opencode、Codex CLI、Windsurf、Amp、Kilocode、Auggie、Roo Code、CodeBuddy CLI、Amazon Q Developer CLI 或 Trae AI. 如果你没有安装, 或者你希望在不检查正确工具的情况下获取模板, 请在命令中使用 `--ignore-agent-tools`: 
 
 ```bash
 specify-cn init <project_name> --ai claude --ignore-agent-tools
