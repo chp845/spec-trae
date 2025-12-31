@@ -18,7 +18,7 @@
 > **💡 这是 [GitHub Spec Kit](https://github.com/github/spec-kit) 的官方中文复刻版本**
 > **💡 这是 [GitHub Spec Kit](https://github.com/Linfee/spec-kit-cn) 的复刻版本**
 > 
-> **🔄 对应原版版本**: [v0.0.78](https://github.com/github/spec-kit/releases/tag/v0.0.78)
+> **🔄 对应原版版本**: [v0.0.86](https://github.com/github/spec-kit/releases/tag/v0.0.86)
 > 
 > **📦 包名**: `specify-cn-cli`
 >
@@ -62,15 +62,15 @@
 - [🔧 前置要求](#-前置要求)
 - [📖 了解更多](#-了解更多)
 - [📋 详细流程](#-详细流程)
-  - [\*\*步骤1: \*\* 建立项目原则](#步骤1--建立项目原则)
-  - [\*\*步骤2: \*\* 创建项目规范](#步骤2--创建项目规范)
-  - [\*\*步骤3: \*\* 功能规范澄清(计划前必需)](#步骤3--功能规范澄清计划前必需)
-  - [\*\*步骤4: \*\* 生成计划](#步骤4--生成计划)
-  - [\*\*步骤5: \*\* 让Claude Code验证计划](#步骤5--让claude-code验证计划)
-  - [\*\*步骤6: \*\* 使用 /speckit.tasks 生成任务分解](#步骤6--使用-speckittasks-生成任务分解)
-  - [\*\*步骤7: \*\* 实施](#步骤7--实施)
+  - [步骤1:  建立项目原则](#步骤1--建立项目原则)
+  - [步骤2:  创建项目规范](#步骤2--创建项目规范)
+  - [步骤3:  功能规范澄清(计划前必需)](#步骤3--功能规范澄清计划前必需)
+  - [步骤4:  生成计划](#步骤4--生成计划)
+  - [步骤 5: 让 Claude Code 验证计划](#步骤-5-让-claude-code-验证计划)
+  - [步骤6:  使用 /speckit.tasks 生成任务分解](#步骤6--使用-speckittasks-生成任务分解)
+  - [步骤7:  实施](#步骤7--实施)
 - [🔍 故障排除](#-故障排除)
-  - [Linux上的Git凭据管理器](#linux上的git凭据管理器)
+  - [Linux 上的 Git 凭据管理器](#linux-上的-git-凭据管理器)
 - [👥 维护者](#-维护者)
 - [💬 支持](#-支持)
 - [🙏 致谢](#-致谢)
@@ -79,7 +79,7 @@
 
 ### 🎯 差异说明
 
-| 项目 | Spec Kit原版  | Spec Kit CN中文版 |
+| 项目 | Spec Kit 原版 | Spec Kit CN 中文版 |
 | ---- | ------------- | ----------------- |
 | 命令 | `specify`     | `specify-cn`      |
 | 包名 | `specify-cli` | `specify-cn-cli`  |
@@ -185,22 +185,26 @@ uvx --from git+https://github.com/chp845/spec-trae.git specify-cn init <PROJECT_
 
 ## 🤖 支持的 AI 代理
 
-| 代理                                                      | 支持 | 说明                                                                               |
-| --------------------------------------------------------- | ---- | ---------------------------------------------------------------------------------- |
-| [Claude Code](https://www.anthropic.com/claude-code)      | ✅    | Anthropic Claude Code助手                                                           |
-| [GitHub Copilot](https://code.visualstudio.com/)          | ✅    | GitHub Copilot IDE集成                                                              |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | ✅    | Google Gemini CLI助手                                                               |
-| [Cursor](https://cursor.sh/)                              | ✅    | Cursor AI编辑器                                                                     |
-| [Qwen Code](https://github.com/QwenLM/qwen-code)          | ✅    | 阿里云通义千问代码助手                                                              |
-| [opencode](https://opencode.ai/)                          | ✅    | opencode AI助手                                                                     |
-| [Windsurf](https://windsurf.com/)                         | ✅    | Windsurf AI编辑器                                                                   |
-| [Kilo Code](https://github.com/Kilo-Org/kilocode)         | ✅    | Kilo Code AI助手                                                                    |
-| [Auggie CLI](https://docs.augmentcode.com/cli/overview)   | ✅    | Auggie CLI助手                                                                      |
-| [Roo Code](https://roocode.com/)                          | ✅    | Roo Code AI助手                                                                     |
-| [CodeBuddy](https://www.codebuddy.ai/)                    | ✅    | CodeBuddy AI助手                                                                    |
-| [Codex CLI](https://github.com/openai/codex)              | ✅    | OpenAI Codex CLI助手                                                                |
-| [Amazon Q Developer CLI](https://aws.amazon.com/developer/learning/q-developer-cli/) | ⚠️ | Amazon Q Developer CLI [不支持](https://github.com/aws/amazon-q-developer-cli/issues/3064) 斜杠命令的自定义参数.  |
-| [Amp](https://ampcode.com/)                               | ✅    | Amp AI助手                                                                          |
+| 代理                                                                                 | 支持 | 说明                                                                                                                                     |
+| ------------------------------------------------------------------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [Qoder CLI](https://qoder.com/cli)                                                   | ✅    |                                                                                                                                        |
+| [Amazon Q Developer CLI](https://aws.amazon.com/developer/learning/q-developer-cli/) | ⚠️    | Amazon Q Developer CLI [不支持](https://github.com/aws/amazon-q-developer-cli/issues/3064) 斜杠命令的自定义参数.                      |
+| [Amp](https://ampcode.com/)                                                          | ✅    |                                                                                                                                        |
+| [Auggie CLI](https://docs.augmentcode.com/cli/overview)                              | ✅    |                                                                                                                                        |
+| [Claude Code](https://www.anthropic.com/claude-code)                                 | ✅    |                                                                                                                                        |
+| [CodeBuddy CLI](https://www.codebuddy.ai/cli)                                        | ✅    |                                                                                                                                        |
+| [Codex CLI](https://github.com/openai/codex)                                         | ✅    |                                                                                                                                        |
+| [Cursor](https://cursor.sh/)                                                         | ✅    |                                                                                                                                        |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli)                            | ✅    |                                                                                                                                        |
+| [GitHub Copilot](https://code.visualstudio.com/)                                     | ✅    |                                                                                                                                        |
+| [IBM Bob](https://www.ibm.com/products/bob)                                          | ✅    | 基于 IDE 的代理, 支持斜杠命令                                                                                                           |
+| [Jules](https://jules.google.com/)                                                   | ✅    |                                                                                                                                        |
+| [Kilo Code](https://github.com/Kilo-Org/kilocode)                                    | ✅    |                                                                                                                                        |
+| [opencode](https://opencode.ai/)                                                     | ✅    |                                                                                                                                        |
+| [Qwen Code](https://github.com/QwenLM/qwen-code)                                     | ✅    |                                                                                                                                        |
+| [Roo Code](https://roocode.com/)                                                     | ✅    |                                                                                                                                        |
+| [SHAI (OVHcloud)](https://github.com/ovh/shai)                                       | ✅    |                                                                                                                                        |
+| [Windsurf](https://windsurf.com/)                                                    | ✅    |                                                                                                                                        |
 | [Trae AI](https://trae.ai/)                               | ✅    | Trae AI IDE-based Agent                                                             |
 
 
@@ -214,14 +218,14 @@ uvx --from git+https://github.com/chp845/spec-trae.git specify-cn init <PROJECT_
 | 命令    | 描述                                                                                                                          |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `init`  | 从最新模板初始化新的 Specify CN 项目                                                                                          |
-| `check` | 检查已安装的工具 (`git`, `claude`, `gemini`, `code`/`code-insiders`, `cursor-agent`, `windsurf`, `qwen`, `opencode`, `codex`, `q`, `trae`) |
+| `check` | 检查已安装的工具 (`git`, `claude`, `gemini`, `code`/`code-insiders`, `cursor-agent`, `windsurf`, `qwen`, `opencode`, `codex`, `shai`, `qoder`, `q`, `trae`) |
 
 ### `specify-cn init` 参数和选项
 
 | 参数/选项              | 类型 | 描述                                                                                                                             |
 | ---------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `<project-name>`       | 参数 | 新项目目录的名称(使用 `--here` 时可选, 或使用 `.` 表示当前目录)                                                                                         |
-| `--ai`                 | 选项 | 要使用的 AI 助手: `claude`, `gemini`, `copilot`, `cursor-agent`, `qwen`, `opencode`, `codex`, `windsurf`, `kilocode`, `auggie`, `roo`, `codebuddy`, `amp`, `trae`, 或 `q` |
+| `--ai`                 | 选项 | 要使用的 AI 助手: `claude`, `gemini`, `copilot`, `cursor-agent`, `qwen`, `opencode`, `codex`, `windsurf`, `kilocode`, `auggie`, `roo`, `codebuddy`, `amp`, `shai`, `q`, `bob`, `trae`,或 `qoder` |
 | `--script`             | 选项 | 要使用的脚本变体: `sh` (bash/zsh) 或 `ps` (PowerShell)                                                                           |
 | `--ignore-agent-tools` | 标志 | 跳过 AI 代理工具的检查, 如 Claude Code                                                                                             |
 | `--no-git`             | 标志 | 跳过 git 仓库初始化                                                                                                              |
@@ -237,17 +241,26 @@ uvx --from git+https://github.com/chp845/spec-trae.git specify-cn init <PROJECT_
 # 基本项目初始化
 specify-cn init my-project
 
-# 使用特定AI助手初始化
+# 使用特定 AI 助手初始化
 specify-cn init my-project --ai claude
 
 # 使用 Cursor 支持初始化
 specify-cn init my-project --ai cursor-agent
+
+# 使用 Qoder 支持初始化
+specify-cn init my-project --ai qoder
 
 # 使用 Windsurf 支持初始化
 specify-cn init my-project --ai windsurf
 
 # 使用 Amp 支持初始化
 specify-cn init my-project --ai amp
+
+# 使用 SHAI 支持初始化
+specify-cn init my-project --ai shai
+
+# 使用 IBM Bob 支持初始化
+specify-cn init my-project --ai bob
 
 # 使用 PowerShell 脚本初始化(Windows/跨平台)
 specify-cn init my-project --ai copilot --script ps
@@ -277,7 +290,7 @@ specify-cn check
 
 ### 可用的斜杠命令
 
-运行 `specify-cn init` 后, 你的AI编码代理将可以使用这些斜杠命令进行结构化开发: 
+运行 `specify-cn init` 后, 你的 AI 编码代理将可以使用这些斜杠命令进行结构化开发: 
 
 #### 核心命令
 
@@ -298,7 +311,7 @@ specify-cn check
 | 命令              | 描述                                                           |
 | ------------------ | ------------------------------------------------------------- |
 | `/speckit.clarify`   | 澄清未充分说明的区域(建议在 `/speckit.plan` 之前运行; 以前为 `/quizme`) |
-| `/speckit.analyze`   | 跨工件一致性和覆盖范围分析(在 /speckit.tasks 之后, /speckit.implement 之前运行) |
+| `/speckit.analyze`   | 跨制品一致性和覆盖范围分析(在 /speckit.tasks 之后, /speckit.implement 之前运行) |
 | `/speckit.checklist` | 生成自定义质量检查清单, 验证需求的完整性、清晰性和一致性(类似"英文的单元测试") |
 
 ### 环境变量
@@ -314,14 +327,14 @@ specify-cn check
 - **意图驱动开发**, 规范在"如何"之前定义"什么"
 - **丰富的规范创建**, 使用护栏和组织原则
 - **多步细化**, 而不是从提示一次性生成代码
-- **高度依赖**高级AI模型能力进行规范解释
+- **高度依赖**高级 AI 模型能力进行规范解释
 
 ## 🌟 开发阶段
 
 | 阶段 | 重点 | 关键活动 |
 |-------|-------|----------------|
 | **0到1开发**("新建项目") | 从头生成 | <ul><li>从高层需求开始</li><li>生成规范</li><li>规划实施步骤</li><li>构建生产就绪的应用程序</li></ul> |
-| **创意探索** | 并行实现 | <ul><li>探索多样化的解决方案</li><li>支持多种技术栈和架构</li><li>实验UX模式</li></ul> |
+| **创意探索** | 并行实现 | <ul><li>探索多样化的解决方案</li><li>支持多种技术栈和架构</li><li>实验 UX 模式</li></ul> |
 | **迭代增强**("现有项目改造") | 现有项目现代化 | <ul><li>迭代添加功能</li><li>现代化遗留系统</li><li>适应流程</li></ul> |
 
 ## 🎯 实验目标
@@ -342,7 +355,7 @@ specify-cn check
 ### 以用户为中心的开发
 
 - 为不同用户群体和偏好构建应用程序
-- 支持各种开发方法(从氛围编码到AI原生开发)
+- 支持各种开发方法(从氛围编码到 AI 原生开发)
 
 ### 创意和迭代过程
 
@@ -352,8 +365,8 @@ specify-cn check
 
 ## 🔧 前置要求
 
-- **Linux/macOS**(或Windows上的WSL2)
-- AI编码代理: [Claude Code](https://www.anthropic.com/claude-code)、[GitHub Copilot](https://code.visualstudio.com/)、[Gemini CLI](https://github.com/google-gemini/gemini-cli)、[Cursor](https://cursor.sh/)、[Qwen CLI](https://github.com/QwenLM/qwen-code)、[opencode](https://opencode.ai/)、[Codex CLI](https://github.com/openai/codex)、[Windsurf](https://windsurf.com/)、[Amp](https://ampcode.com/) 或 [Amazon Q Developer CLI](https://aws.amazon.com/developer/learning/q-developer-cli/)
+- **Linux/macOS**(或 Windows 上的 WSL2)
+- AI 编码代理: [Claude Code](https://www.anthropic.com/claude-code)、[GitHub Copilot](https://code.visualstudio.com/)、[Gemini CLI](https://github.com/google-gemini/gemini-cli)、[Cursor](https://cursor.sh/)、[Qwen CLI](https://github.com/QwenLM/qwen-code)、[opencode](https://opencode.ai/)、[Codex CLI](https://github.com/openai/codex)、[Windsurf](https://windsurf.com/)、[Amp](https://ampcode.com/) 或 [Amazon Q Developer CLI](https://aws.amazon.com/developer/learning/q-developer-cli/)
 - [uv](https://docs.astral.sh/uv/) 用于包管理
 - [Python 3.11+](https://www.python.org/downloads/)
 - [Git](https://git-scm.com/downloads)
@@ -372,7 +385,7 @@ specify-cn check
 <details>
 <summary>点击展开详细的分步演练</summary>
 
-你可以使用Specify CN CLI来引导你的项目, 这将在你的环境中引入所需的工件. 运行: 
+你可以使用 Specify CN CLI 来引导你的项目, 这将在你的环境中引入所需的制品. 运行:
 
 ```bash
 specify-cn init <project_name>
@@ -390,9 +403,9 @@ specify-cn init . --force
 specify-cn init --here --force
 ```
 
-![Specify CN CLI在终端中引导新项目](./media/specify_cli.gif)
+![Specify CN CLI 在终端中引导新项目](./media/specify_cli.gif)
 
-系统会提示你选择正在使用的AI代理. 你也可以直接在终端中主动指定: 
+系统会提示你选择正在使用的 AI 代理. 你也可以直接在终端中主动指定:
 
 ```bash
 specify-cn init <project_name> --ai claude
@@ -419,17 +432,17 @@ specify-cn init --here --ai codex
 specify-cn init --here --force --ai claude
 ```
 
-CLI会检查你是否安装了Claude Code、Gemini CLI、Cursor CLI、Qwen CLI、opencode、Codex CLI、Windsurf、Amp、Kilocode、Auggie、Roo Code、CodeBuddy CLI、Amazon Q Developer CLI 或 Trae AI. 如果你没有安装, 或者你希望在不检查正确工具的情况下获取模板, 请在命令中使用 `--ignore-agent-tools`: 
+CLI 会检查你是否安装了 Claude Code、Gemini CLI、Cursor CLI、Qwen CLI、opencode、Codex CLI或 Trae AI. 如果你没有安装, 或者你希望在不检查正确工具的情况下获取模板, 请在命令中使用 `--ignore-agent-tools`:
 
 ```bash
 specify-cn init <project_name> --ai claude --ignore-agent-tools
 ```
 
-### **步骤1: ** 建立项目原则
+### 步骤1:  建立项目原则
 
-转到项目文件夹并运行你的AI代理. 在我们的示例中, 我们使用 `claude`.
+转到项目文件夹并运行你的 AI 代理. 在我们的示例中, 我们使用 `claude`.
 
-![引导Claude Code环境](./media/bootstrap-claude-code.gif)
+![引导 Claude Code 环境](./media/bootstrap-claude-code.gif)
 
 如果你看到 `/speckit.constitution`、`/speckit.specify`、`/speckit.plan`、`/speckit.tasks` 和 `/speckit.implement` 命令可用, 就说明配置正确.
 
@@ -439,33 +452,37 @@ specify-cn init <project_name> --ai claude --ignore-agent-tools
 /speckit.constitution 创建专注于代码质量、测试标准、用户体验一致性和性能要求的原则. 包括这些原则应如何指导技术决策和实施选择的治理.
 ```
 
-此步骤会创建或更新 `.specify/memory/constitution.md` 文件, 其中包含项目的基础指南, AI代理将在规范、规划和实施阶段参考这些指南.
+此步骤会创建或更新 `.specify/memory/constitution.md` 文件, 其中包含项目的基础指南, AI 代理将在规范、规划和实施阶段参考这些指南.
+
+### 步骤2:  创建项目规范
+
+有了项目原则后, 你现在可以创建功能规范. 使用 `/speckit.specify` 命令, 然后为你想要开发的项目提供具体需求.
 
 >[!IMPORTANT]
->尽可能明确地说明你要构建的_什么_和_为什么_. **此时不要关注技术栈**.
+>尽可能明确地说明你要构建的*什么*和*为什么*. **此时不要关注技术栈**.
 
 示例提示: 
 
 ```text
-开发Taskify, 一个团队生产力平台. 它应该允许用户创建项目、添加团队成员、
-分配任务、评论并以看板风格在板之间移动任务. 在此功能的初始阶段, 
-我们称之为"创建Taskify", 我们将有多个用户, 但用户将提前预定义.
+开发 Taskify, 一个团队生产力平台. 它应该允许用户创建项目、添加团队成员、
+分配任务、评论并以看板风格在板之间移动任务. 在此功能的初始阶段,
+我们称之为"创建 Taskify", 我们将有多个用户, 但用户将提前预定义.
 我想要两个不同类别的五个用户, 一个产品经理和四个工程师. 让我们创建三个
 不同的示例项目. 让我们为每个任务的状态使用标准的看板列, 如"待办"、
 "进行中"、"审核中"和"已完成". 此应用程序将没有登录, 因为这只是
-确保我们基本功能设置的第一次测试. 对于UI中的任务卡片, 
+确保我们基本功能设置的第一次测试. 对于 UI 中的任务卡片,
 你应该能够在看板工作板的不同列之间更改任务的当前状态.
 你应该能够为特定卡片留下无限数量的评论. 你应该能够从该任务
-卡片中分配一个有效用户. 当你首次启动Taskify时, 它会给你一个五个用户的列表供你选择.
+卡片中分配一个有效用户. 当你首次启动 Taskify 时, 它会给你一个五个用户的列表供你选择.
 不需要密码. 当你点击用户时, 你进入主视图, 显示项目列表.
 当你点击项目时, 你会打开该项目的看板. 你将看到列.
-你将能够在不同列之间来回拖放卡片. 你将看到分配给你的任何卡片, 
+你将能够在不同列之间来回拖放卡片. 你将看到分配给你的任何卡片,
 即当前登录用户, 与其他卡片颜色不同, 以便你快速看到你的卡片.
 你可以编辑你所做的任何评论, 但不能编辑其他人所做的评论. 你可以
 删除你所做的任何评论, 但不能删除其他人所做的评论.
 ```
 
-输入此提示后, 你应该看到Claude Code启动规划和规范起草过程. Claude Code还将触发一些内置脚本来设置仓库.
+输入此提示后, 你应该看到 Claude Code 启动规划和规范起草过程. Claude Code 还将触发一些内置脚本来设置仓库.
 
 完成此步骤后, 你应该有一个新创建的分支(例如, `001-create-taskify`), 以及 `specs/001-create-taskify` 目录中的新规范.
 
@@ -482,20 +499,29 @@ specify-cn init <project_name> --ai claude --ignore-agent-tools
     │	 ├── common.sh
     │	 ├── create-new-feature.sh
     │	 ├── setup-plan.sh
-    │	 └── update-agent-context.sh
+    │	 └── update-cluade-md.sh
     ├── specs
     │	 └── 001-create-taskify
     │	     └── spec.md
     └── templates
-        ├── CLAUDE-template.md
         ├── plan-template.md
         ├── spec-template.md
         └── tasks-template.md
 ```
 
-### **步骤2: ** 创建项目规范
+### 步骤3:  功能规范澄清(计划前必需)
 
-有了项目原则后, 你现在可以创建功能规范. 使用 `/speckit.specify` 命令, 然后为你想要开发的项目提供具体需求.
+创建了基线规范后, 你可以继续澄清在第一次尝试中未正确捕获的任何需求.
+
+你应该在创建技术计划之前运行结构化澄清工作流程, 以减少下游的返工.
+
+首选顺序:
+1. 使用 `/speckit.clarify`(结构化)- 顺序的、基于覆盖率的提问, 将答案记录在澄清部分.
+2. 如果仍然感觉模糊, 可以选择性地进行临时自由形式细化.
+
+如果你有意跳过细节澄清环节(例如，进行概念验证或探索性原型设计), 请明确说明, 这样智能体就不会因缺少澄清信息而停滞不前.
+
+一个自由形式的优化提示示例(在 `/speckit.clarify` 之后如果仍然需要): 
 
 ```text
 对于你创建的每个示例项目或项目, 每个项目应该有5到15个之间的可变数量任务, 
@@ -510,19 +536,9 @@ specify-cn init <project_name> --ai claude --ignore-agent-tools
 
 重要的是, 要将与Claude Code的互动作为澄清和围绕规范提问的机会——**不要将其第一次尝试视为最终版本**.
 
-### **步骤3: ** 功能规范澄清(计划前必需)
+### 步骤4:  生成计划
 
-创建了基线规范后, 你可以继续澄清在第一次尝试中未正确捕获的任何需求.
-
-你应该在创建技术计划之前运行结构化澄清工作流程, 以减少下游的返工.
-
-首选顺序:
-1. 使用 `/speckit.clarify`(结构化)- 顺序的、基于覆盖率的提问, 将答案记录在澄清部分.
-2. 如果仍然感觉模糊, 可以选择性地进行临时自由形式细化.
-
-如果你想跳过澄清(例如, 技术验证或探索性原型), 请明确说明, 这样代理就不会因缺少澄清而阻塞.
-
-示例自由形式细化提示(如果需要, 在 `/speckit.clarify` 之后): 
+你现在可以具体说明技术栈和其他技术要求. 你可以使用项目模板中内置的 `/speckit.plan` 命令, 使用这样的提示: 
 
 ```text
 我们将使用.NET Aspire生成这个, 使用Postgres作为数据库. 前端应该使用
@@ -542,7 +558,7 @@ Blazor服务器与拖拽任务板、实时更新. 应该创建一个REST API, �
 │	 ├── common.sh
 │	 ├── create-new-feature.sh
 │	 ├── setup-plan.sh
-│	 └── update-agent-context.sh
+│	 └── update-cluade-md.sh
 ├── specs
 │	 └── 001-create-taskify
 │	     ├── contracts
@@ -584,9 +600,9 @@ Blazor服务器与拖拽任务板、实时更新. 应该创建一个REST API, �
 >[!NOTE]
 >Claude Code可能过于急切, 添加你没有要求的组件. 要求它澄清变更的理由和来源.
 
-### **步骤4: ** 生成计划
+### 步骤5:  让Claude Code验证计划
 
-你现在可以具体说明技术栈和其他技术要求. 你可以使用项目模板中内置的 `/speckit.plan` 命令, 使用这样的提示: 
+有了计划后, 你应该让Claude Code检查它, 确保没有遗漏的部分. 你可以使用这样的提示: 
 
 ```text
 现在我希望你去审核实施计划和实施细节文件.
@@ -602,14 +618,7 @@ Blazor服务器与拖拽任务板、实时更新. 应该创建一个REST API, �
 >[!NOTE]
 >在让代理实施之前, 还值得提示Claude Code交叉检查细节, 看看是否有任何过度设计的部分(记住——它可能过于急切). 如果存在过度设计的组件或决策, 你可以要求Claude Code解决它们. 确保Claude Code遵循[项目章程](.specify/memory/constitution.md)作为建立计划时必须遵守的基础.
 
-### **步骤5: ** 让Claude Code验证计划
-
-有了计划后, 你应该让Claude Code检查它, 确保没有遗漏的部分. 你可以使用这样的提示: 
-
->[!IMPORTANT]
->Claude Code将执行本地CLI命令(如 `dotnet`)——确保你在机器上安装了它们.
-
-### **步骤6: ** 使用 /speckit.tasks 生成任务分解
+### 步骤6:  使用 /speckit.tasks 生成任务分解
 
 实施计划验证通过后, 你现在可以将计划分解为具体的、可执行的任务, 这些任务可以按正确的顺序执行. 使用 `/speckit.tasks` 命令从你的实施计划自动生成详细的任务分解:
 
@@ -628,7 +637,7 @@ Blazor服务器与拖拽任务板、实时更新. 应该创建一个REST API, �
 
 生成的 tasks.md 为 `/speckit.implement` 命令提供了清晰的路线图, 确保系统性实施, 保持代码质量并允许用户故事的增量交付.
 
-### **步骤7: ** 实施
+### 步骤7:  实施
 
 准备就绪后, 使用 `/speckit.implement` 命令执行你的实施计划:
 

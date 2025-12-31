@@ -10,7 +10,7 @@
 # ]
 # ///
 """
-Spec Kit CN CLI - Setup tool for Spec Kit CN projects
+Specify CN CLI - 设置工具，用于规范驱动开发项目
 
 Usage:
     uvx specify-cn-cli.py init <project-name>
@@ -18,7 +18,7 @@ Usage:
     uvx specify-cn-cli.py init --here
 
 Or install globally:
-    uv tool install --from specify-cn-cli.py specify-cn-cli
+    uv tool install --from specify-cn-cli.py specify-cn
     specify-cn init <project-name>
     specify-cn init .
     specify-cn init --here
@@ -51,6 +51,7 @@ from typer.core import TyperGroup
 import readchar
 import ssl
 import truststore
+from datetime import datetime, timezone
 
 ssl_context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 client = httpx.Client(verify=ssl_context)
@@ -63,6 +64,63 @@ def _github_auth_headers(cli_token: str | None = None) -> dict:
     """Return Authorization header dict only when a non-empty token exists."""
     token = _github_token(cli_token)
     return {"Authorization": f"Bearer {token}"} if token else {}
+
+def _parse_rate_limit_headers(headers: httpx.Headers) -> dict:
+    """Extract and parse GitHub rate-limit headers."""
+    info = {}
+    
+    # Standard GitHub rate-limit headers
+    if "X-RateLimit-Limit" in headers:
+        info["limit"] = headers.get("X-RateLimit-Limit")
+    if "X-RateLimit-Remaining" in headers:
+        info["remaining"] = headers.get("X-RateLimit-Remaining")
+    if "X-RateLimit-Reset" in headers:
+        reset_epoch = int(headers.get("X-RateLimit-Reset", "0"))
+        if reset_epoch:
+            reset_time = datetime.fromtimestamp(reset_epoch, tz=timezone.utc)
+            info["reset_epoch"] = reset_epoch
+            info["reset_time"] = reset_time
+            info["reset_local"] = reset_time.astimezone()
+    
+    # Retry-After header (seconds or HTTP-date)
+    if "Retry-After" in headers:
+        retry_after = headers.get("Retry-After")
+        try:
+            info["retry_after_seconds"] = int(retry_after)
+        except ValueError:
+            # HTTP-date format - not implemented, just store as string
+            info["retry_after"] = retry_after
+    
+    return info
+
+def _format_rate_limit_error(status_code: int, headers: httpx.Headers, url: str) -> str:
+    """Format a user-friendly error message with rate-limit information."""
+    rate_info = _parse_rate_limit_headers(headers)
+    
+    lines = [f"GitHub API returned status {status_code} for {url}"]
+    lines.append("")
+    
+    if rate_info:
+        lines.append("[bold]Rate Limit Information:[/bold]")
+        if "limit" in rate_info:
+            lines.append(f"  • Rate Limit: {rate_info['limit']} requests/hour")
+        if "remaining" in rate_info:
+            lines.append(f"  • Remaining: {rate_info['remaining']}")
+        if "reset_local" in rate_info:
+            reset_str = rate_info["reset_local"].strftime("%Y-%m-%d %H:%M:%S %Z")
+            lines.append(f"  • Resets at: {reset_str}")
+        if "retry_after_seconds" in rate_info:
+            lines.append(f"  • Retry after: {rate_info['retry_after_seconds']} seconds")
+        lines.append("")
+    
+    # Add troubleshooting guidance
+    lines.append("[bold]Troubleshooting Tips:[/bold]")
+    lines.append("  • If you're on a shared CI or corporate environment, you may be rate-limited.")
+    lines.append("  • Consider using a GitHub token via --github-token or the GH_TOKEN/GITHUB_TOKEN")
+    lines.append("    environment variable to increase rate limits.")
+    lines.append("  • Authenticated requests have a limit of 5,000/hour vs 60/hour for unauthenticated.")
+    
+    return "\n".join(lines)
 
 # Agent configuration with name, folder, install URL, and CLI tool requirement
 AGENT_CONFIG = {
@@ -150,6 +208,24 @@ AGENT_CONFIG = {
         "install_url": "https://ampcode.com/manual#install",
         "requires_cli": True,
     },
+    "shai": {
+        "name": "SHAI",
+        "folder": ".shai/",
+        "install_url": "https://github.com/ovh/shai",
+        "requires_cli": True,
+    },
+    "bob": {
+        "name": "IBM Bob",
+        "folder": ".bob/",
+        "install_url": None,  # IDE-based
+        "requires_cli": False,
+    },
+    "jules": {
+        "name": "Jules",
+        "folder": ".jules/",
+        "install_url": None,  # IDE-based
+        "requires_cli": False,
+    },
     "trae": {
         "name": "Trae AI",
         "folder": ".trae/",
@@ -171,7 +247,7 @@ BANNER = """
 ╚══════╝╚═╝     ╚══════╝ ╚═════╝╚═╝╚═╝        ╚═╝   
 """
 
-TAGLINE = "Spec Kit CN - 规范驱动开发工具包"
+TAGLINE = "GitHub Spec Kit - 规范驱动开发工具包"
 class StepTracker:
     """Track and render hierarchical steps without emojis, similar to Claude Code tree output.
     Supports live auto-refresh via an attached refresh callback.
@@ -583,10 +659,11 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
         )
         status = response.status_code
         if status != 200:
-            msg = f"GitHub API returned {status} for {api_url}"
+            # Format detailed error message with rate-limit info
+            error_msg = _format_rate_limit_error(status, response.headers, api_url)
             if debug:
-                msg += f"\nResponse headers: {response.headers}\nBody (truncated 500): {response.text[:500]}"
-            raise RuntimeError(msg)
+                error_msg += f"\n\n[dim]Response body (truncated 500):[/dim]\n{response.text[:500]}"
+            raise RuntimeError(error_msg)
         try:
             release_data = response.json()
         except ValueError as je:
@@ -633,9 +710,11 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
             headers=_github_auth_headers(github_token),
         ) as response:
             if response.status_code != 200:
-                response.read()
-                body_sample = response.text[:400]
-                raise RuntimeError(f"Download failed with {response.status_code}\nHeaders: {response.headers}\nBody (truncated): {body_sample}")
+                # Handle rate-limiting on download as well
+                error_msg = _format_rate_limit_error(response.status_code, response.headers, download_url)
+                if debug:
+                    error_msg += f"\n\n[dim]Response body (truncated 400):[/dim]\n{response.text[:400]}"
+                raise RuntimeError(error_msg)
             total_size = int(response.headers.get('content-length', 0))
             with open(zip_path, 'wb') as f:
                 if total_size == 0:
@@ -826,7 +905,7 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
 
 
 def ensure_executable_scripts(project_path: Path, tracker: StepTracker | None = None) -> None:
-    """Ensure POSIX .sh scripts under .specify/scripts (recursively) have execute bits (no-op on Windows)."""
+    """确保 POSIX .sh 脚本在 .specify/scripts 下（递归）具有执行位（Windows 上无操作）。"""
     if os.name == "nt":
         return  # Windows: skip silently
     scripts_root = project_path / ".specify" / "scripts"
@@ -872,7 +951,7 @@ def ensure_executable_scripts(project_path: Path, tracker: StepTracker | None = 
 @app.command()
 def init(
     project_name: str = typer.Argument(None, help="Name for your new project directory (optional if using --here, or use '.' for current directory)"),
-    ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, amp, q, trae"),
+    ai_assistant: str = typer.Option(None, "--ai", help="AI assistant to use: claude, gemini, copilot, cursor-agent, qwen, opencode, codex, windsurf, kilocode, auggie, codebuddy, amp, shai, q, trae, bob, or jules"),
     script_type: str = typer.Option(None, "--script", help="Script type to use: sh or ps"),
     ignore_agent_tools: bool = typer.Option(False, "--ignore-agent-tools", help="Skip checks for AI agent tools like Claude Code"),
     no_git: bool = typer.Option(False, "--no-git", help="Skip git repository initialization"),
@@ -894,21 +973,18 @@ def init(
     6. Optionally set up AI assistant commands
     
     Examples:
-        specify init my-project
-        specify init my-project --ai claude
-        specify init my-project --ai copilot --no-git
-        specify init --ignore-agent-tools my-project
-        specify init . --ai claude         # Initialize in current directory
-        specify init .                     # Initialize in current directory (interactive AI selection)
-        specify init --here --ai claude    # Alternative syntax for current directory
-        specify init --here --ai codex
-        specify init --here --ai codebuddy
-        specify init --here --ai amp
-        specify init --here --ai q
-        specify init --here --ai trae
-
-        specify init --here
-        specify init --here --force  # Skip confirmation when current directory not empty
+        specify-cn init my-project
+        specify-cn init my-project --ai claude
+        specify-cn init my-project --ai copilot --no-git
+        specify-cn init --ignore-agent-tools my-project
+        specify-cn init . --ai claude         # Initialize in current directory
+        specify-cn init .                     # Initialize in current directory (interactive AI selection)
+        specify-cn init --here --ai claude    # Alternative syntax for current directory
+        specify-cn init --here --ai codex
+        specify-cn init --here --ai codebuddy
+        specify-cn init --here --ai trae
+        specify-cn init --here
+        specify-cn init --here --force  # Skip confirmation when current directory not empty
     """
 
     show_banner()
@@ -922,7 +998,7 @@ def init(
         raise typer.Exit(1)
 
     if not here and not project_name:
-        console.print("[red]Error:[/red] Must specify either a project name, use '.' for current directory, or use --here flag")
+        console.print("[red]Error:[/red] Must specify project name, use '.' for current directory, or use --here flag")
         raise typer.Exit(1)
 
     if here:
@@ -997,7 +1073,7 @@ def init(
                     f"[cyan]{selected_ai}[/cyan] not found\n"
                     f"Install from: [cyan]{install_url}[/cyan]\n"
                     f"{agent_config['name']} is required to continue with this project type.\n\n"
-                    "Tip: Use [cyan]--ignore-agent-tools[/cyan] to skip this check",
+                    "提示：使用 [cyan]--ignore-agent-tools[/cyan] 跳过此检查",
                     title="[red]Agent Detection Error[/red]",
                     border_style="red",
                     padding=(1, 2)
@@ -1150,32 +1226,32 @@ def init(
 
     steps_lines.append(f"{step_num}. Start using slash commands with your AI agent:")
 
-    steps_lines.append("   2.1 [cyan]/speckit.constitution[/] - Establish project principles")
-    steps_lines.append("   2.2 [cyan]/speckit.specify[/] - Create baseline specification")
-    steps_lines.append("   2.3 [cyan]/speckit.plan[/] - Create implementation plan")
-    steps_lines.append("   2.4 [cyan]/speckit.tasks[/] - Generate actionable tasks")
-    steps_lines.append("   2.5 [cyan]/speckit.implement[/] - Execute implementation")
+    steps_lines.append("   2.1 [cyan]/speckit.constitution[/] - 建立项目原则")
+    steps_lines.append("   2.2 [cyan]/speckit.specify[/] - 创建基线规范")
+    steps_lines.append("   2.3 [cyan]/speckit.plan[/] - 创建实施计划")
+    steps_lines.append("   2.4 [cyan]/speckit.tasks[/] - 生成可执行任务")
+    steps_lines.append("   2.5 [cyan]/speckit.implement[/] - 执行实施")
 
     steps_panel = Panel("\n".join(steps_lines), title="Next Steps", border_style="cyan", padding=(1,2))
     console.print()
     console.print(steps_panel)
 
     enhancement_lines = [
-        "Optional commands that you can use for your specs [bright_black](improve quality & confidence)[/bright_black]",
+        "可用于规范的可选命令 [bright_black](提高质量和信心)[/bright_black]",
         "",
-        f"○ [cyan]/speckit.clarify[/] [bright_black](optional)[/bright_black] - Ask structured questions to de-risk ambiguous areas before planning (run before [cyan]/speckit.plan[/] if used)",
-        f"○ [cyan]/speckit.analyze[/] [bright_black](optional)[/bright_black] - Cross-artifact consistency & alignment report (after [cyan]/speckit.tasks[/], before [cyan]/speckit.implement[/])",
-        f"○ [cyan]/speckit.checklist[/] [bright_black](optional)[/bright_black] - Generate quality checklists to validate requirements completeness, clarity, and consistency (after [cyan]/speckit.plan[/])"
+        f"○ [cyan]/speckit.clarify[/] [bright_black](可选)[/bright_black] - 在规划前询问结构化问题以降低模糊区域的风险 (如果使用，在 [cyan]/speckit.plan[/] 前运行)",
+        f"○ [cyan]/speckit.analyze[/] [bright_black](可选)[/bright_black] - 交叉制品一致性和对齐报告 (在 [cyan]/speckit.tasks[/] 后，[cyan]/speckit.implement[/] 前)",
+        f"○ [cyan]/speckit.checklist[/] [bright_black](可选)[/bright_black] - 生成质量检查清单以验证需求的完整性、清晰度和一致性 (在 [cyan]/speckit.plan[/] 后)"
     ]
-    enhancements_panel = Panel("\n".join(enhancement_lines), title="Enhancement Commands", border_style="cyan", padding=(1,2))
+    enhancements_panel = Panel("\n".join(enhancement_lines), title="增强命令", border_style="cyan", padding=(1,2))
     console.print()
     console.print(enhancements_panel)
 
 @app.command()
 def check():
-    """Check that all required tools are installed."""
+    """Check if all required tools are installed."""
     show_banner()
-    console.print("[bold]Checking for installed tools...[/bold]\n")
+    console.print("[bold]Checking installed tools...[/bold]\n")
 
     tracker = StepTracker("Check Available Tools")
 
@@ -1205,13 +1281,92 @@ def check():
 
     console.print(tracker.render())
 
-    console.print("\n[bold green]Specify CLI is ready to use![/bold green]")
+    console.print("\n[bold green]Specify CN CLI is ready![/bold green]")
 
     if not git_ok:
-        console.print("[dim]Tip: Install git for repository management[/dim]")
+        console.print("[dim]提示：安装 git 用于仓库管理[/dim]")
 
     if not any(agent_results.values()):
-        console.print("[dim]Tip: Install an AI assistant for the best experience[/dim]")
+        console.print("[dim]提示：安装 AI 助手以获得最佳体验[/dim]")
+
+@app.command()
+def version():
+    """Display version and system information."""
+    import platform
+    import importlib.metadata
+    
+    show_banner()
+    
+    # Get CLI version from package metadata
+    cli_version = "unknown"
+    try:
+        cli_version = importlib.metadata.version("specify-cn-cli")
+    except Exception:
+        # Fallback: try reading from pyproject.toml if running from source
+        try:
+            import tomllib
+            pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+            if pyproject_path.exists():
+                with open(pyproject_path, "rb") as f:
+                    data = tomllib.load(f)
+                    cli_version = data.get("project", {}).get("version", "unknown")
+        except Exception:
+            pass
+    
+    # Fetch latest template release version
+    repo_owner = "linfee"
+    repo_name = "spec-kit-cn"
+    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+    
+    template_version = "unknown"
+    release_date = "unknown"
+    
+    try:
+        response = client.get(
+            api_url,
+            timeout=10,
+            follow_redirects=True,
+            headers=_github_auth_headers(),
+        )
+        if response.status_code == 200:
+            release_data = response.json()
+            template_version = release_data.get("tag_name", "unknown")
+            # Remove 'v' prefix if present
+            if template_version.startswith("v"):
+                template_version = template_version[1:]
+            release_date = release_data.get("published_at", "unknown")
+            if release_date != "unknown":
+                # Format the date nicely
+                try:
+                    dt = datetime.fromisoformat(release_date.replace('Z', '+00:00'))
+                    release_date = dt.strftime("%Y-%m-%d")
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    info_table = Table(show_header=False, box=None, padding=(0, 2))
+    info_table.add_column("Key", style="cyan", justify="right")
+    info_table.add_column("Value", style="white")
+
+    info_table.add_row("CLI Version", cli_version)
+    info_table.add_row("Template Version", template_version)
+    info_table.add_row("Released", release_date)
+    info_table.add_row("", "")
+    info_table.add_row("Python", platform.python_version())
+    info_table.add_row("Platform", platform.system())
+    info_table.add_row("Architecture", platform.machine())
+    info_table.add_row("OS Version", platform.version())
+
+    panel = Panel(
+        info_table,
+        title="[bold cyan]Specify CLI Information[/bold cyan]",
+        border_style="cyan",
+        padding=(1, 2)
+    )
+
+    console.print(panel)
+    console.print()
 
 def main():
     app()

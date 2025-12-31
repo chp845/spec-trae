@@ -1,5 +1,14 @@
 ---
-description: 执行实施规划工作流, 使用计划模板生成设计工件.
+description: 执行实施规划工作流, 使用计划模板生成设计制品.
+handoffs:
+  - label: 创建任务
+    agent: /speckit.tasks
+    prompt: 将计划分解为任务
+    send: true
+  - label: 创建检查清单
+    agent: /speckit.checklist
+    prompt: 为需求创建质量检查清单
+    send: true
 scripts:
   sh: scripts/bash/setup-plan.sh --json
   ps: scripts/powershell/setup-plan.ps1 -Json
@@ -31,7 +40,7 @@ $ARGUMENTS
    - 阶段 1: 通过运行代理脚本更新代理上下文
    - 设计后重新评估章程检查
 
-4. **停止并报告**: 命令在阶段 2 规划后结束. 报告分支、IMPL_PLAN 路径和生成的工件.
+4. **停止并报告**: 命令在阶段 2 规划后结束. 报告分支、IMPL_PLAN 路径和生成的制品.
 
 ## 阶段
 

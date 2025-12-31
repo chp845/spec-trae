@@ -5,6 +5,127 @@
 格式基于[Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
 并且本项目遵循[语义化版本](https://semver.org/lang/zh-CN/).
 
+## [0.0.90] - 2025-12-05
+
+### 同步原版
+- 同步原版 [v0.0.90](https://github.com/github/spec-kit/releases/tag/v0.0.90)
+- 对应原版范围: v0.0.86 → v0.0.90
+
+### 🚀 新增功能
+
+#### 新增 AI 助手支持
+- **Qoder CLI**: 新增 Qoder 配置到 `AGENT_CONFIG`
+- **Jules**: 新增 Jules 配置（IDE-based）
+- **SHAI**: 新增 SHAI (OVHcloud) 配置
+- **帮助文档**: 更新 `--ai` 参数帮助信息，包含所有新助手
+- **代理文档**: 在 `AGENTS.md` 中添加所有新助手条目
+
+#### 文档结构优化
+- **快速开始指南**: 从 4 步流程更新为 6 步流程
+  - 新增 Step 2: Define Your Constitution
+  - 新增 Step 4: Refine Spec
+  - 新增 Step 6 中的验证步骤（analyze、implement）
+- **模板更新**: 同步分支检查逻辑，防止分支编号冲突
+
+#### 文件同步
+- **src/specify_cli/__init__.py**: 同步所有新增 AI 助手配置
+- **docs/quickstart.md**: 恢复完整的 6 步流程
+- **templates/commands/specify.md**: 同步分支检查逻辑
+- **templates/commands/tasks.md**: 更新任务生成工作流
+- **README.md**: 更新版本信息和 AI 助手列表
+- **spec-driven.md**: 同步最新内容
+- **CONTRIBUTING.md**: 更新贡献指南
+- **CODE_OF_CONDUCT.md**: 更新行为准则
+- **pyproject.toml**: 版本号更新至 v0.0.90
+
+### 🔧 技术更新
+- **分支管理**: 优化分支编号逻辑，防止冲突
+- **错误处理**: 改进错误消息和用户提示
+- **代码质量**: 统一代码注释和文档字符串语言
+
+### 📋 质量保证
+- **翻译标准**: 严格遵循 TRANSLATION_STANDARDS.md 规范
+- **术语一致性**: 确保所有术语符合 TERMINOLOGY.md
+- **格式规范**: 修复斜杠命令格式和中英文混排问题
+- **功能验证**: 验证所有新增 AI 助手在 CLI 中正常工作
+
+---
+
+## [0.0.86] - 2025-11-29
+
+### 同步原版
+- 同步原版 [v0.0.86](https://github.com/github/spec-kit/releases/tag/v0.0.86)
+- 对应原版范围: v0.0.78 → v0.0.86
+
+### 🚀 新增功能
+
+#### IBM Bob IDE 支持
+- **CLI 集成**: 新增 IBM Bob 配置到 `AGENT_CONFIG`
+- **帮助文档**: 更新 `--ai` 参数帮助信息，包含 IBM Bob 选项
+- **代理文档**: 在 `AGENTS.md` 中添加 IBM Bob 条目
+- **术语表**: 在 `TERMINOLOGY.md` 中添加 IBM Bob 和 SHAI 术语
+
+#### 文件同步
+- **src/specify_cli/__init__.py**: 同步 IBM Bob 配置和 CLI 帮助信息
+- **AGENTS.md**: 完整翻译并添加 IBM Bob 支持
+- **TERMINOLOGY.md**: 添加 IBM Bob 和 SHAI 术语条目
+- **pyproject.toml**: 版本号更新至 v0.0.86
+- **README.md**: 验证已包含最新 AI 助手列表
+
+### 🔧 技术更新
+- **构建脚本**: 同步原版发布和上下文更新脚本
+- **版本管理**: 遵循语义化版本规范
+
+### 📋 质量保证
+- **翻译标准**: 遵循 TRANSLATION_STANDARDS.md 规范
+- **术语一致性**: 确保所有新术语符合 TERMINOLOGY.md
+- **功能验证**: 验证 IBM Bob 在 CLI 中正常工作
+
+---
+
+*本次同步主要完成 IBM Bob IDE 的支持集成，确保中文版与原版 v0.0.86 保持功能对等。*
+
+### 同步原版
+- 同步原版 [v0.0.85](https://github.com/github/spec-kit/releases/tag/v0.0.85)
+- 对应原版范围: v0.0.78 → v0.0.85
+- 主要同步提交: `e77d99a Support for version command` 等
+
+### 🚀 新增功能
+- **版本命令支持**: 新增 `specify-cn version` 命令
+  - 显示CLI版本和系统信息
+  - 获取最新模板版本信息
+  - 显示Python版本和平台信息
+- **Handoffs 功能**: 模板间智能跳转支持
+  - 在 clarify、constitution、plan、specify、tasks 命令中添加 handoffs 配置
+  - 支持工作流自动化和步骤间跳转
+  - 中文本地化标签和提示
+
+### 🆕 新增文档和模板
+- **升级指南**: 新增完整的升级文档 docs/upgrade.md
+  - CLI工具升级步骤
+  - 项目文件更新指南
+  - 常见问题和解决方案
+  - 版本兼容性说明
+- **任务转议题**: 新增 templates/commands/taskstoissues.md
+  - 将任务转换为GitHub议题
+  - 支持GitHub MCP服务器集成
+  - 完整的操作流程和警告说明
+
+### 🛠️ 技术增强
+- **GitHub API 限制处理**: 增强API限流处理
+  - 新增限流头信息解析功能
+  - 用户友好的限流错误提示
+  - 自动重试和等待机制
+- **脚本更新**: 所有构建脚本同步更新
+  - 支持新的 handoffs 功能
+  - 改进错误处理和日志
+  - PowerShell 脚本增强
+
+### 🔄 版本管理
+- 版本号更新至 0.0.85
+- 与原版 v0.0.85 完全同步
+- 保持功能对等性
+
 ## [0.0.78] - 2025-10-22
 
 ### 同步原版
