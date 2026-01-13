@@ -650,28 +650,50 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
         console.print("[cyan]Fetching latest release information...[/cyan]")
     api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
 
-    try:
-        response = client.get(
-            api_url,
-            timeout=30,
-            follow_redirects=True,
-            headers=_github_auth_headers(github_token),
-        )
-        status = response.status_code
-        if status != 200:
-            # Format detailed error message with rate-limit info
-            error_msg = _format_rate_limit_error(status, response.headers, api_url)
-            if debug:
-                error_msg += f"\n\n[dim]Response body (truncated 500):[/dim]\n{response.text[:500]}"
-            raise RuntimeError(error_msg)
+    import time
+    max_retries = 3
+    release_data = None
+    
+    for attempt in range(max_retries):
         try:
-            release_data = response.json()
-        except ValueError as je:
-            raise RuntimeError(f"Failed to parse release JSON: {je}\nRaw (truncated 400): {response.text[:400]}")
-    except Exception as e:
-        console.print(f"[red]Error fetching release information[/red]")
-        console.print(Panel(str(e), title="Fetch Error", border_style="red"))
-        raise typer.Exit(1)
+            response = client.get(
+                api_url,
+                timeout=30,
+                follow_redirects=True,
+                headers=_github_auth_headers(github_token),
+            )
+            status = response.status_code
+            if status != 200:
+                # Format detailed error message with rate-limit info
+                error_msg = _format_rate_limit_error(status, response.headers, api_url)
+                if debug:
+                    error_msg += f"\n\n[dim]Response body (truncated 500):[/dim]\n{response.text[:500]}"
+                raise RuntimeError(error_msg)
+            try:
+                release_data = response.json()
+                break # Success!
+            except ValueError as je:
+                raise RuntimeError(f"Failed to parse release JSON: {je}\nRaw (truncated 400): {response.text[:400]}")
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 2
+                if verbose:
+                    console.print(f"[yellow]Attempt {attempt + 1} failed. Retrying in {wait_time}s...[/yellow]")
+                time.sleep(wait_time)
+                continue
+            
+            console.print(f"[red]Error fetching release information[/red]")
+            error_detail = str(e)
+            
+            # Special guidance for SSL/Network errors
+            if "SSL" in error_detail or "EOF" in error_detail:
+                error_detail += "\n\n[bold yellow]提示 (Suggestions):[/bold yellow]\n"
+                error_detail += "1. 尝试使用 [bold]--skip-tls[/bold] 参数跳过 SSL 验证 (如果您在代理或防火墙之后).\n"
+                error_detail += "2. 检查网络连接或 GitHub 访问状态.\n"
+                error_detail += "3. 如果遇到频率限制, 请设置 [bold]GH_TOKEN[/bold] 环境变量."
+            
+            console.print(Panel(error_detail, title="Fetch Error", border_style="red"))
+            raise typer.Exit(1)
 
     assets = release_data.get("assets", [])
     pattern = f"spec-kit-template-{ai_assistant}-{script_type}"
@@ -701,49 +723,65 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     if verbose:
         console.print(f"[cyan]Downloading template...[/cyan]")
 
-    try:
-        with client.stream(
-            "GET",
-            download_url,
-            timeout=60,
-            follow_redirects=True,
-            headers=_github_auth_headers(github_token),
-        ) as response:
-            if response.status_code != 200:
-                # Handle rate-limiting on download as well
-                error_msg = _format_rate_limit_error(response.status_code, response.headers, download_url)
-                if debug:
-                    error_msg += f"\n\n[dim]Response body (truncated 400):[/dim]\n{response.text[:400]}"
-                raise RuntimeError(error_msg)
-            total_size = int(response.headers.get('content-length', 0))
-            with open(zip_path, 'wb') as f:
-                if total_size == 0:
-                    for chunk in response.iter_bytes(chunk_size=8192):
-                        f.write(chunk)
-                else:
-                    if show_progress:
-                        with Progress(
-                            SpinnerColumn(),
-                            TextColumn("[progress.description]{task.description}"),
-                            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-                            console=console,
-                        ) as progress:
-                            task = progress.add_task("Downloading...", total=total_size)
-                            downloaded = 0
-                            for chunk in response.iter_bytes(chunk_size=8192):
-                                f.write(chunk)
-                                downloaded += len(chunk)
-                                progress.update(task, completed=downloaded)
-                    else:
+    for attempt in range(max_retries):
+        try:
+            with client.stream(
+                "GET",
+                download_url,
+                timeout=60,
+                follow_redirects=True,
+                headers=_github_auth_headers(github_token),
+            ) as response:
+                if response.status_code != 200:
+                    # Handle rate-limiting on download as well
+                    error_msg = _format_rate_limit_error(response.status_code, response.headers, download_url)
+                    if debug:
+                        error_msg += f"\n\n[dim]Response body (truncated 400):[/dim]\n{response.text[:400]}"
+                    raise RuntimeError(error_msg)
+                
+                total_size = int(response.headers.get('content-length', 0))
+                with open(zip_path, 'wb') as f:
+                    if total_size == 0:
                         for chunk in response.iter_bytes(chunk_size=8192):
                             f.write(chunk)
-    except Exception as e:
-        console.print(f"[red]Error downloading template[/red]")
-        detail = str(e)
-        if zip_path.exists():
-            zip_path.unlink()
-        console.print(Panel(detail, title="Download Error", border_style="red"))
-        raise typer.Exit(1)
+                    else:
+                        if show_progress:
+                            with Progress(
+                                SpinnerColumn(),
+                                TextColumn("[progress.description]{task.description}"),
+                                TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                                console=console,
+                            ) as progress:
+                                task = progress.add_task("Downloading...", total=total_size)
+                                downloaded = 0
+                                for chunk in response.iter_bytes(chunk_size=8192):
+                                    f.write(chunk)
+                                    downloaded += len(chunk)
+                                    progress.update(task, completed=downloaded)
+                        else:
+                            for chunk in response.iter_bytes(chunk_size=8192):
+                                f.write(chunk)
+                break # Success!
+        except Exception as e:
+            if zip_path.exists():
+                zip_path.unlink()
+            
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 2
+                if verbose:
+                    console.print(f"[yellow]Download attempt {attempt + 1} failed. Retrying in {wait_time}s...[/yellow]")
+                time.sleep(wait_time)
+                continue
+                
+            console.print(f"[red]Error downloading template[/red]")
+            error_detail = str(e)
+            if "SSL" in error_detail or "EOF" in error_detail:
+                error_detail += "\n\n[bold yellow]提示 (Suggestions):[/bold yellow]\n"
+                error_detail += "1. 尝试使用 [bold]--skip-tls[/bold] 参数跳过 SSL 验证.\n"
+                error_detail += "2. 检查网络连接或 GitHub 访问状态."
+            
+            console.print(Panel(error_detail, title="Download Error", border_style="red"))
+            raise typer.Exit(1)
     if verbose:
         console.print(f"Downloaded: {filename}")
     metadata = {
@@ -1303,6 +1341,7 @@ def version():
         cli_version = importlib.metadata.version("specify-cn-cli")
     except Exception:
         # Fallback: try reading from pyproject.toml if running from source
+        
         try:
             import tomllib
             pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
@@ -1314,8 +1353,8 @@ def version():
             pass
     
     # Fetch latest template release version
-    repo_owner = "linfee"
-    repo_name = "spec-kit-cn"
+    repo_owner = "chp845"
+    repo_name = "spec-trae"
     api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
     
     template_version = "unknown"
