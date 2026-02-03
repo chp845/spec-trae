@@ -76,9 +76,10 @@ $ARGUMENTS
    - 状态转换(如适用)
 
 2. **从功能需求生成 API 合同**: 
-   - 每个用户操作 → 端点
-   - 使用标准 REST/GraphQL 模式
-   - 将 OpenAPI/GraphQL 模式输出到 `/contracts/`
+   - 每个用户操作 → 端点/方法
+   - 使用标准 REST/GraphQL/gRPC/Thrift 模式
+   - 将相应的定义文件(OpenAPI/GraphQL/Proto/Thrift)输出到 `/contracts/`
+   - 包含必要的错误码定义和数据传输对象(DTO)结构
 
 3. **代理上下文更新**: 
    - 运行 `{AGENT_SCRIPT}`
