@@ -640,7 +640,7 @@ def merge_json_files(existing_path: Path, new_content: dict, verbose: bool = Fal
 
     return merged
 
-def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Tuple[Path, dict]:
+def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None, tracker: StepTracker = None) -> Tuple[Path, dict]:
     repo_owner = "chp845"
     repo_name = "spec-trae"
     if client is None:
@@ -656,9 +656,14 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     
     for attempt in range(max_retries):
         try:
+            # Use shorter timeout for the first attempt to fail fast if blocked
+            current_timeout = 10 if attempt == 0 else 30
+            if tracker:
+                tracker.start("fetch", f"contacting GitHub API (attempt {attempt + 1})")
+            
             response = client.get(
                 api_url,
-                timeout=30,
+                timeout=current_timeout,
                 follow_redirects=True,
                 headers=_github_auth_headers(github_token),
             )
@@ -685,12 +690,13 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
             console.print(f"[red]Error fetching release information[/red]")
             error_detail = str(e)
             
-            # Special guidance for SSL/Network errors
-            if "SSL" in error_detail or "EOF" in error_detail:
+            # Special guidance for SSL/Network/Timeout errors
+            if any(term in error_detail for term in ["SSL", "EOF", "timeout", "Timeout"]):
                 error_detail += "\n\n[bold yellow]提示 (Suggestions):[/bold yellow]\n"
                 error_detail += "1. 尝试使用 [bold]--skip-tls[/bold] 参数跳过 SSL 验证 (如果您在代理或防火墙之后).\n"
-                error_detail += "2. 检查网络连接或 GitHub 访问状态.\n"
-                error_detail += "3. 如果遇到频率限制, 请设置 [bold]GH_TOKEN[/bold] 环境变量."
+                error_detail += "2. 检查您的网络连接, 确保可以访问 github.com.\n"
+                error_detail += "3. 如果您在中国大陆, 可能需要设置代理或多次尝试.\n"
+                error_detail += "4. 如果遇到频率限制, 请设置 [bold]GH_TOKEN[/bold] 环境变量."
             
             console.print(Panel(error_detail, title="Fetch Error", border_style="red"))
             raise typer.Exit(1)
@@ -725,10 +731,14 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
 
     for attempt in range(max_retries):
         try:
+            current_timeout = 20 if attempt == 0 else 60
+            if tracker:
+                tracker.start("download", f"downloading template (attempt {attempt + 1})")
+            
             with client.stream(
                 "GET",
                 download_url,
-                timeout=60,
+                timeout=current_timeout,
                 follow_redirects=True,
                 headers=_github_auth_headers(github_token),
             ) as response:
@@ -775,10 +785,11 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
                 
             console.print(f"[red]Error downloading template[/red]")
             error_detail = str(e)
-            if "SSL" in error_detail or "EOF" in error_detail:
+            if any(term in error_detail for term in ["SSL", "EOF", "timeout", "Timeout"]):
                 error_detail += "\n\n[bold yellow]提示 (Suggestions):[/bold yellow]\n"
                 error_detail += "1. 尝试使用 [bold]--skip-tls[/bold] 参数跳过 SSL 验证.\n"
-                error_detail += "2. 检查网络连接或 GitHub 访问状态."
+                error_detail += "2. 检查您的网络连接, 确保可以访问 github.com.\n"
+                error_detail += "3. 如果您在中国大陆, 可能需要设置代理或多次尝试."
             
             console.print(Panel(error_detail, title="Download Error", border_style="red"))
             raise typer.Exit(1)
@@ -809,7 +820,8 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             show_progress=(tracker is None),
             client=client,
             debug=debug,
-            github_token=github_token
+            github_token=github_token,
+            tracker=tracker
         )
         if tracker:
             tracker.complete("fetch", f"release {meta['release']} ({meta['size']:,} bytes)")
