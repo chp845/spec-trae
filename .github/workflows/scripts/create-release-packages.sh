@@ -54,104 +54,104 @@ rm -rf "$GENRELEASES_DIR"/* || true
 rewrite_paths() {
   sed -E \
     -e 's@(/?)memory/@.specify/memory/@g' \
+    -e 's@(/?)mem/@.specify/mem/@g' \
     -e 's@(/?)scripts/@.specify/scripts/@g' \
     -e 's@(/?)templates/@.specify/templates/@g'
 }
 
 generate_commands() {
-
   local agent=$1 ext=$2 arg_format=$3 output_dir=$4 script_variant=$5
+  local template_dir="${6:-templates/commands}"
 
   mkdir -p "$output_dir"
 
-  for template in templates/commands/*.md; do
+  case $template_dir in
+     templates/skills)
+       # Skills: template dir/*/SKILL.md -> output dir/{name}/SKILL.md
+       for template in "$template_dir"/*/SKILL.md; do
+         [[ -f "$template" ]] || continue
 
-    [[ -f "$template" ]] || continue
+         local name
+         name=$(basename "$(dirname "$template")")
+         file_content=$(tr -d '\r' < "$template")
 
-    local name description script_command agent_script_command body
+         # Replace {SCRIPT} placeholder based on script variant
+         case $script_variant in
+           sh) script_cmd="scripts/bash/create-new-feature.sh --json" ;;
+           ps) script_cmd="scripts/powershell/create-new-feature.ps1 -Json" ;;
+         esac
+         body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_cmd}|g")
 
-    name=$(basename "$template" .md)
+         # Remove entire YAML frontmatter for skills
+         body=$(printf '%s\n' "$body" | awk '
+           /^---$/ { dash++; if(dash == 2) { in_frontmatter=0; next } else { in_frontmatter=1; next } }
+           in_frontmatter { next }
+           { print }
+         ')
 
-    # Normalize line endings
+         body=$(printf '%s\n' "$body" | rewrite_paths)
 
-    file_content=$(tr -d '\r' < "$template")
+         # For Trae: replace .specify/memory/ with .specify/mem/
+         if [[ $agent == "trae" ]]; then
+           body=$(printf '%s\n' "$body" | sed 's@\.specify/memory/@.specify/mem/@g')
+         fi
 
-    # Extract description and script command from YAML frontmatter
+         mkdir -p "$output_dir/${name}"
+         echo "$body" > "$output_dir/${name}/SKILL.md"
+       done
+       ;;
 
-    description=$(printf '%s\n' "$file_content" | awk '/^description:/ {sub(/^description:[[:space:]]*/, ""); print; exit}')
+    *)
+      # Commands: template dir/*.md -> output dir/speckit.{name}.{ext}
+      for template in "$template_dir"/*.md; do
+        [[ -f "$template" ]] || continue
 
-    script_command=$(printf '%s\n' "$file_content" | awk -v sv="$script_variant" '/^[[:space:]]*'"$script_variant"':[[:space:]]*/ {sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, ""); print; exit}')
+        local name description script_command agent_script_command body
+        name=$(basename "$template" .md)
+        file_content=$(tr -d '\r' < "$template")
 
-    if [[ -z $script_command ]]; then
+        description=$(printf '%s\n' "$file_content" | awk '/^description:/ {sub(/^description:[[:space:]]*/, ""); print; exit}')
+        script_command=$(printf '%s\n' "$file_content" | awk -v sv="$script_variant" '/^[[:space:]]*'"$script_variant"':[[:space:]]*/ {sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, ""); print; exit}')
 
-      echo "Warning: no script command found for $script_variant in $template" >&2
+        if [[ -z $script_command ]]; then
+          echo "Warning: no script command found for $script_variant in $template" >&2
+          script_command="(Missing script command for $script_variant)"
+        fi
 
-      script_command="(Missing script command for $script_variant)"
+        agent_script_command=$(printf '%s\n' "$file_content" | awk '
+          /^agent_scripts:$/ { in_agent_scripts=1; next }
+          in_agent_scripts && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+            sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+            print
+            exit
+          }
+          in_agent_scripts && /^[a-zA-Z]/ { in_agent_scripts=0 }
+        ')
 
-    fi
+        body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_command}|g")
+        [[ -n $agent_script_command ]] && body=$(printf '%s\n' "$body" | sed "s|{AGENT_SCRIPT}|${agent_script_command}|g")
 
-    # Extract agent_script command from YAML frontmatter if present
-    agent_script_command=$(printf '%s\n' "$file_content" | awk '
-      /^agent_scripts:$/ { in_agent_scripts=1; next }
-      in_agent_scripts && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
-        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
-        print
-        exit
-      }
-      in_agent_scripts && /^[a-zA-Z]/ { in_agent_scripts=0 }
-    ')
+        body=$(printf '%s\n' "$body" | awk '
+          /^---$/ { print; if (++dash_count == 1) in_frontmatter=1; else in_frontmatter=0; next }
+          in_frontmatter && /^scripts:$/ { skip_scripts=1; next }
+          in_frontmatter && /^agent_scripts:$/ { skip_scripts=1; next }
+          in_frontmatter && /^[a-zA-Z].*:/ && skip_scripts { skip_scripts=0 }
+          in_frontmatter && skip_scripts && /^[[:space:]]/ { next }
+          { print }
+        ')
 
-    # Replace {SCRIPT} placeholder with the script command
+        body=$(printf '%s\n' "$body" | sed "s/{ARGS}/$arg_format/g" | sed "s/__AGENT__/$agent/g" | rewrite_paths)
 
-    body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_command}|g")
-
-    # Replace {AGENT_SCRIPT} placeholder with the agent script command if found
-    if [[ -n $agent_script_command ]]; then
-      body=$(printf '%s\n' "$body" | sed "s|{AGENT_SCRIPT}|${agent_script_command}|g")
-    fi
-
-    # Remove the scripts: and agent_scripts: sections from frontmatter while preserving YAML structure
-
-    body=$(printf '%s\n' "$body" | awk '
-
-    /^---$/ { print; if (++dash_count == 1) in_frontmatter=1; else in_frontmatter=0; next }
-
-    in_frontmatter && /^scripts:$/ { skip_scripts=1; next }
-
-    in_frontmatter && /^agent_scripts:$/ { skip_scripts=1; next }
-
-    in_frontmatter && /^[a-zA-Z].*:/ && skip_scripts { skip_scripts=0 }
-
-    in_frontmatter && skip_scripts && /^[[:space:]]/ { next }
-
-    { print }
-
-')
-
-    # Apply other substitutions
-
-    body=$(printf '%s\n' "$body" | sed "s/{ARGS}/$arg_format/g" | sed "s/__AGENT__/$agent/g" | rewrite_paths)
-
-    case $ext in
-
-      toml)
-
-        body=$(printf '%s\n' "$body" | sed 's/\\/\\\\/g')
-
-        { echo "description = \"$description\""; echo; echo "prompt = \"\"\""; echo "$body"; echo "\"\"\""; } > "$output_dir/speckit.$name.$ext" ;;
-
-      md)
-
-        echo "$body" > "$output_dir/speckit.$name.$ext" ;;
-
-      agent.md)
-
-        echo "$body" > "$output_dir/speckit.$name.$ext" ;;
-
-    esac
-
-  done
-
+        case $ext in
+          toml)
+            body=$(printf '%s\n' "$body" | sed 's/\\/\\\\/g')
+            { echo "description = \"$description\""; echo; echo "prompt = \"\"\""; echo "$body"; echo "\"\"\""; } > "$output_dir/speckit.$name.$ext" ;;
+          md|agent.md)
+            echo "$body" > "$output_dir/speckit.$name.$ext" ;;
+        esac
+      done
+      ;;
+  esac
 }
 
 generate_copilot_prompts() {
@@ -190,7 +190,15 @@ build_variant() {
 
   mkdir -p "$SPEC_DIR"
 
-  [[ -d memory ]] && { cp -r memory "$SPEC_DIR/"; echo "Copied memory -> .specify"; }
+  [[ -d memory ]] && {
+    if [[ $agent == "trae" ]]; then
+      cp -r memory "$SPEC_DIR/mem"
+      echo "Copied memory -> .specify/mem"
+    else
+      cp -r memory "$SPEC_DIR/"
+      echo "Copied memory -> .specify"
+    fi
+  }
 
   # Only copy the relevant script variant directory
 
@@ -228,7 +236,7 @@ build_variant() {
 
   fi
 
-  [[ -d templates ]] && { mkdir -p "$SPEC_DIR/templates"; find templates -type f -not -path "templates/commands/*" -not -name "vscode-settings.json" -exec cp --parents {} "$SPEC_DIR"/ \; 2>/dev/null || true; echo "Copied templates -> .specify/templates"; }
+  [[ -d templates ]] && { mkdir -p "$SPEC_DIR/templates"; for f in templates/*.md; do [[ -f "$f" ]] && cp "$f" "$SPEC_DIR/templates/"; done; echo "Copied templates -> .specify/templates"; }
 
   # Inject variant into plan-template.md within .specify/templates if present
 
@@ -379,10 +387,9 @@ build_variant() {
       generate_commands bob md "\$ARGUMENTS" "$base_dir/.bob/commands" "$script" ;;
 
     trae)
-
-      mkdir -p "$base_dir/.trae/workflows"
-
-      generate_commands trae md "\$ARGUMENTS" "$base_dir/.trae/workflows" "$script" ;;
+      mkdir -p "$base_dir/.trae/skills"
+      generate_commands trae md "\$ARGUMENTS" "$base_dir/.trae/skills" "$script" "templates/skills"
+      ;;
 
   esac
 
