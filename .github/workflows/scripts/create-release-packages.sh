@@ -53,10 +53,10 @@ rm -rf "$GENRELEASES_DIR"/* || true
 
 rewrite_paths() {
   sed -E \
-    -e 's@(/?)memory/@.specify/memory/@g' \
-    -e 's@(/?)mem/@.specify/mem/@g' \
-    -e 's@(/?)scripts/@.specify/scripts/@g' \
-    -e 's@(/?)templates/@.specify/templates/@g'
+    -e 's@(^|[ "'\''`(\[])/?memory/@\1.specify/memory/@g' \
+    -e 's@(^|[ "'\''`(\[])/?mem/@\1.specify/mem/@g' \
+    -e 's@(^|[ "'\''`(\[])/?scripts/@\1.specify/scripts/@g' \
+    -e 's@(^|[ "'\''`(\[])/?templates/@\1.specify/templates/@g'
 }
 
 generate_commands() {
@@ -66,7 +66,7 @@ generate_commands() {
   mkdir -p "$output_dir"
 
   case $template_dir in
-     templates/skills)
+     *templates/skills)
        # Skills: template dir/*/SKILL.md -> output dir/{name}/SKILL.md
        for template in "$template_dir"/*/SKILL.md; do
          [[ -f "$template" ]] || continue
@@ -82,14 +82,14 @@ generate_commands() {
          esac
          body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_cmd}|g")
 
-         # Remove entire YAML frontmatter for skills
-         body=$(printf '%s\n' "$body" | awk '
-           /^---$/ { dash++; if(dash == 2) { in_frontmatter=0; next } else { in_frontmatter=1; next } }
-           in_frontmatter { next }
-           { print }
-         ')
+        # Keep YAML frontmatter for skills
+        # body=$(printf '%s\n' "$body" | awk '
+        #   /^---$/ { dash++; if(dash == 2) { in_frontmatter=0; next } else { in_frontmatter=1; next } }
+        #   in_frontmatter { next }
+        #   { print }
+        # ')
 
-         body=$(printf '%s\n' "$body" | rewrite_paths)
+        body=$(printf '%s\n' "$body" | rewrite_paths)
 
          # For Trae: replace .specify/memory/ with .specify/mem/
          if [[ $agent == "trae" ]]; then
